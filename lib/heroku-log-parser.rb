@@ -17,10 +17,11 @@ class HerokuLogParser
     protected
 
     # http://tools.ietf.org/html/rfc5424#page-8
-    # frame <prority>version time hostname <appname-missing> procid msgid [no structured data = '-'] msg
-    # 120 <40>1 2013-07-26T18:39:37.489572+00:00 host app web.11 - State changed from starting to up...
+    # frame <prority>version time hostname <appname-missing> procid
+    # msgid [no structured data = '-'] [something else they added recently = '-'] msg
+    # 120 <40>1 2013-07-26T18:39:37.489572+00:00 host app web.11 - - State changed from starting to up.
     def line_regex
-      @line_regex ||= /\<(\d+)\>(1) (\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\d\d\d\+00:00) ([a-z0-9\-\_\.]+) ([a-z0-9-]+) ([a-z0-9\-\_\.]+) (\-) (.*)$/
+      @line_regex ||= /\<(\d+)\>(1) (\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\d\d\d\+00:00) ([a-z0-9\-\_\.]+) ([a-z0-9-]+) ([a-z0-9\-\_\.]+) (\-) (\-) (.*)$/
     end
 
     # Heroku's http log drains (https://devcenter.heroku.com/articles/labs-https-drains)
@@ -60,7 +61,8 @@ class HerokuLogParser
       event[:proc_id] = interpret_nil(matching[6])
       event[:msg_id] = interpret_nil(nil)
       event[:structured_data] = interpret_nil(matching[7])
-      event[:message] = interpret_nil(matching[8])
+      event[:extra_unknown_data] = interpret_nil(matching[8])
+      event[:message] = interpret_nil(matching[9])
       event
     end
 
